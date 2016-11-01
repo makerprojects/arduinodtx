@@ -17,11 +17,16 @@
 ** 18-08-2013 GLOBAL_BAT
 */
 
-/* Copyright (C) 2013 Richard Goutorbe.  All right reserved.
+/* Copyright (C) 2014 Richard Goutorbe.  All right reserved.
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 3.
 This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
 Contact information: http://www.reseau.org/arduinorc/index.php?n=Main.Contact
+
+** GS changes: 
+* 
+** 09-10-2015 revised PROGMEM vaiabledefs to latest avr-Compiler (>= 1.6) requirements
+** 01-11-2016 merged latest version of arduinotx (1.5.5) into arduinodtx
 */
 
 #ifndef arduinotx_eeprom_h
@@ -52,6 +57,7 @@ Contact information: http://www.reseau.org/arduinorc/index.php?n=Main.Contact
 #define VARS_PER_MODEL 2
 
 // number of mixers defined in each dataset
+// if you need more mixers you can simply change this value
 #define NMIXERS 2
 
 // number of variables of each mixer (number of items in MixerVarNames_str[])
@@ -124,22 +130,22 @@ extern const char Gvn_ICT[] PROGMEM,	Gvn_ICN[] PROGMEM, Gvn_REV[] PROGMEM, Gvn_D
 
 class ArduinotxEeprom {
 	private:
-		static PGM_P GlobalVarNames_str[] PROGMEM;
+		static PGM_P const GlobalVarNames_str[] PROGMEM;
 		static const byte GlobalVarSize_byt[] PROGMEM;
 		static const byte GlobalVarType_byt[] PROGMEM;
 		static const int GlobalVarDefault_int[] PROGMEM;
 		
-		static PGM_P ModelVarNames_str[] PROGMEM;
+		static PGM_P const ModelVarNames_str[] PROGMEM;
 		static const byte ModelVarSize_byt[] PROGMEM;
 		static const byte ModelVarType_byt[] PROGMEM;
 		static const int ModelVarDefault_int[] PROGMEM;
 	
-		static PGM_P MixerVarNames_str[] PROGMEM;
+		static PGM_P const MixerVarNames_str[] PROGMEM;
 		static const byte MixerVarSize_byt[] PROGMEM;
 		static const byte MixerVarType_byt[] PROGMEM;
 		static const int MixerVarDefault_int[] PROGMEM;
 		
-		static const char *ChanVarNames_str[] PROGMEM;
+		static PGM_P const ChanVarNames_str[] PROGMEM;
 		static const byte ChanVarSize_byt[] PROGMEM;
 		static const byte ChanVarType_byt[] PROGMEM;
 		static const int ChanVarDefault_int[] PROGMEM;

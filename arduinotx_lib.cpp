@@ -2,12 +2,17 @@
 ** 15-06-2013
 ** 2013-08-14 getProgmemStrchr(), getProgmemStrpos()
 ** 2013-08-16 del getProgmemStrchr(), getProgmemStrpos() fixed
-
-Copyright (C) 2013 Richard Goutorbe.  All right reserved.
+*
+Copyright (C) 2014 Richard Goutorbe.  All right reserved.
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 3.
 This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
 Contact information: http://www.reseau.org/arduinorc/index.php?n=Main.Contact
+
+
+** GS changes: 
+** 09-10-2015 revised PROGMEM vaiabledefs to latest avr-Compiler (>= 1.6) requirements
+** 01-11-2016 merged latest version of arduinotx (1.5.5) into arduinodtx
 */
 
 #include "arduinotx_lib.h"
@@ -27,7 +32,7 @@ byte serialInit(long bauds_lng) {
 	if (stream_ptr) {
 		stdout = stream_ptr;
 		stderr = stream_ptr;
-		aPrintfln(PSTR("serialInit(%ld)"), bauds_lng);
+		// aPrintfln(PSTR("serialInit(%ld)"), bauds_lng);
 	}
 	else {
 		Serial.println("fdevopen failed");
@@ -104,7 +109,7 @@ int getProgmemStrpos(PGM_P pgm_str, const char c_chr) {
 // array_str : the PROGMEM string array
 // idx_int : index of the item of array_str to copy into out_buffer_str
 // buffersize_int : size of out_buffer_str, at most buffersize_int-1 chars will be copied and a \0 will be appended
-char *getProgmemStrArrayValue(char *out_buffer_str, PGM_P *array_str, int idx_int, size_t buffersize_int) {
+char *getProgmemStrArrayValue(char *out_buffer_str, PGM_P const *array_str, int idx_int, size_t buffersize_int) {
 	char *retval_str = out_buffer_str;
 	PGM_P item_ptr = (PGM_P)pgm_read_word(array_str + idx_int);
 	if (item_ptr) {
@@ -123,7 +128,7 @@ char *getProgmemStrArrayValue(char *out_buffer_str, PGM_P *array_str, int idx_in
 // item_str : the string value to search for in array_str
 // nitems_int : optional, number of items in array_str;
 // if nitems_int is not specified then the last item of the array must be a NULL pointer else this function will probably crash your program
-int findProgmemStrArrayIndex(PGM_P *array_str, const char *value_str, int nitems_int) {
+int findProgmemStrArrayIndex(PGM_P const *array_str, const char *value_str, int nitems_int) {
 	int retval_int = -1;
 	int idx_int = 0;
 	PGM_P item_ptr = NULL;

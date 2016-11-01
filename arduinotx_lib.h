@@ -2,6 +2,19 @@
 ** 2013-08-11 aPrintfln()
 ** 2013-08-14 getProgmemStrchr(), getProgmemStrpos()
 ** 2013-08-16 del getProgmemStrchr()
+*
+*/
+
+/* Copyright (C) 2014 Richard Goutorbe.  All right reserved.
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 3.
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
+Contact information: http://www.reseau.org/arduinorc/index.php?n=Main.Contact
+
+  
+** GS changes: 
+** 09-10-2015 revised PROGMEM vaiabledefs to latest avr-Compiler (>= 1.6) requirements
+** 01-11-2016 merged latest version of arduinotx (1.5.5) into arduinodtx
 */
 
 
@@ -22,8 +35,8 @@ void aprintf(const char *fmt_str, ... );
 void aPrintf(const char *fmt_str, ... );
 int serialWrite(char c, FILE *f);
 int getProgmemStrpos(PGM_P pgm_str, const char c_chr);
-char *getProgmemStrArrayValue(char *out_buffer_str, PGM_P *array_str, int idx_int, size_t buffersize_int);
-int findProgmemStrArrayIndex(PGM_P *array_str, const char *value_str, int nitems_int = 32767);
+char *getProgmemStrArrayValue(char *out_buffer_str, PGM_P const *array_str, int idx_int, size_t buffersize_int);
+int findProgmemStrArrayIndex(PGM_P const *array_str, const char *value_str, int nitems_int = 32767);
 void printProgmemStrArray(PGM_P *array_str, int nitems_int = 32767);
 byte Isblank(const char *line_str);
 char *Trimwhitespace(char *out_line_str);

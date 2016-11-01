@@ -5,7 +5,7 @@
 ** 16-08-2013 fixed dcl LedCharset_str[]
 */
 
-/* Copyright (C) 2013 Richard Goutorbe.  All right reserved.
+/* Copyright (C) 2014 Richard Goutorbe.  All right reserved.
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 3.
 This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -23,7 +23,7 @@ const char LedCharset_str[] PROGMEM = "BCPT0123456789";
 const char LedMorse_B[] PROGMEM = "-..."; const char LedMorse_C[] PROGMEM = "-.-."; const char LedMorse_P[] PROGMEM = ".--."; const char LedMorse_T[] PROGMEM = "-"; 
 const char LedMorse_0[] PROGMEM = "-----"; const char LedMorse_1[] PROGMEM = ".----"; const char LedMorse_2[] PROGMEM = "..---"; const char LedMorse_3[] PROGMEM = "...--"; const char LedMorse_4[] PROGMEM = "....-";
 const char LedMorse_5[] PROGMEM = "....."; const char LedMorse_6[] PROGMEM = "-...."; const char LedMorse_7[] PROGMEM = "--..."; const char LedMorse_8[] PROGMEM = "---.."; const char LedMorse_9[] PROGMEM = "----.";
-PGM_P LedMorseCodes_str[] PROGMEM = {
+static PGM_P const LedMorseCodes_str[] PROGMEM = {
 	LedMorse_B, LedMorse_C, LedMorse_P, LedMorse_T,
 	LedMorse_0, LedMorse_1, LedMorse_2, LedMorse_3, LedMorse_4, LedMorse_5, LedMorse_6, LedMorse_7, LedMorse_8, LedMorse_9,
 	NULL
@@ -79,20 +79,20 @@ byte ArduinotxLed::SetCode(const char c_char) {
 //~ // Refresh led, private call: arg reset_byt 1=reset internal state, for private calls only
 void ArduinotxLed::Refresh(byte reset_byt) {
 	static byte Pulse_idx_byt = 0;
-	static unsigned long Begin_ulng = 0;
+	static unsigned long Begin_int = 0;
 	
 	if (reset_byt) {
 		Pulse_idx_byt = 0;
-		Begin_ulng = millis();
+		Begin_int = millis();
 		digitalWrite(OutPin_byt, *Pulses_byt ? HIGH:LOW);
 	}
 			
 	byte pulse_byt = *(Pulses_byt + Pulse_idx_byt);
 	if (pulse_byt) {
-		unsigned long now_ulng = millis();
-		if (now_ulng >= Begin_ulng + (10L * pulse_byt) || now_ulng < Begin_ulng) {
+		unsigned long now_int = millis();
+		if (now_int >= Begin_int + (10L * pulse_byt) || now_int < Begin_int) {
 			++Pulse_idx_byt;
-			Begin_ulng = now_ulng;
+			Begin_int = now_int;
 			digitalWrite(OutPin_byt, Pulse_idx_byt % 2 == 0 ? HIGH:LOW);
 		}
 	}

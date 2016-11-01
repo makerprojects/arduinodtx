@@ -1,6 +1,6 @@
 /* arduinodtx.ino - Open source digital RC transmitter software for the Arduino 
 
-Copyright (C) 2014 Gregor Schlechtriem.  All rights reserved.
+Copyright (C) 2014-15 Gregor Schlechtriem.  All rights reserved.
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 3.
 This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -9,6 +9,17 @@ Contact information: http://www.pikoder.com
 This software is based on Richard Goutorbe's arduinotx (Open source RC transmitter for the Arduino) and makes use of most of the arduinotx modules. 
 When changes were done I also changed the header information.
 */
+
+/*
+ ** Last change:
+ ** 2015-10-09: changed misc. defs to allow for compilation w/ Arduino IDE 1.6.x
+ ** 2015-10-15: corrected miniSSC channel value calculation in transmitter.cpp
+ */
+
+/*
+ ** Compiled with: IDE 1.6.8 & Board Manager 1.6.8
+ */
+  
 
 /*
 ** Resources -----------------------------------------------
@@ -91,13 +102,14 @@ void callback() {
 	// Read input controls and update Chan_pulse_int[]
 	for (byte chan_byt = 0; chan_byt < CHANNELS; chan_byt++) {
 		unsigned int control_value_int = 0;
-		control_value_int = ArduinoTx_obj.ComputeChannelPulse(chan_byt, ArduinoTx_obj.ReadControl(chan_byt))/4;
-                if (control_value_int != Chan_pulse_int[chan_byt]) {
-                     mySerial.write(byte(0xFF));  // synch token
-                     mySerial.write(chan_byt);    // channel number
-                     mySerial.write(byte(control_value_int));
-		     Chan_pulse_int[chan_byt] = control_value_int;
-                }
+		unsigned int ChanMin_int, ChanMax_int;
+		control_value_int = ArduinoTx_obj.ComputeChannelPulse(chan_byt, ArduinoTx_obj.ReadControl(chan_byt));
+    if (control_value_int != Chan_pulse_int[chan_byt]) {
+      mySerial.write(byte(0xFF));  // synch token
+      mySerial.write(chan_byt);    // channel _PWL
+      mySerial.write(byte(control_value_int));
+		  Chan_pulse_int[chan_byt] = control_value_int;
+    }
 	}
 	if (RequestPpmCopy_bool) {
 		// copy the PPM sequence values into global array for the "print ppm" command

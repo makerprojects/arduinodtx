@@ -3,13 +3,19 @@
 ** 14-08-2013 renaming
 ** 15-08-2013 PlayCount_byt
 ** 27-08-2013 HalfPeriod_int
+*
 */
 
-/* Copyright (C) 2013 Richard Goutorbe.  All right reserved.
+/* Copyright (C) 2014 Richard Goutorbe.  All right reserved.
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 3.
 This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
 Contact information: http://www.reseau.org/arduinorc/index.php?n=Main.Contact
+
+
+** GS changes: 
+** 09-10-2015 revised PROGMEM vaiabledefs to latest avr-Compiler (>= 1.6) requirements
+** 01-11-2016 merged latest version of arduinotx (1.5.5) into arduinodtx
 */
 
 #ifndef arduinotx_buzz_h

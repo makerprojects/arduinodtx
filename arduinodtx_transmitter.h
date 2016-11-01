@@ -1,6 +1,9 @@
 /* arduinotx_transmitter.h - Tx manager
+ 
+** 01-11-2016 merged latest version of arduinotx (1.5.5) into arduinodtx
 
-Copyright (C) 2014 Gregor Schlechtriem.  All rights reserved.
+
+Copyright (C) 2014-16 Gregor Schlechtriem.  All rights reserved.
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 3.
 This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -12,48 +15,18 @@ The init process has been revised since the ppm signal is replaced by the miniSS
 #ifndef arduinodtx_transmitter_h
 #define arduinodtx_transmitter_h
 
-#define SOFTWARE_VERSION PSTR("1.4.0")
+#define SOFTWARE_VERSION PSTR("1.5.5")
 
-// Number of channels [1,9]
-// With the Arduino Nano, 8 analog input pins: A0 to A7 are available for
-// proportional channels, and 6 digital input pins: D2 to D7 for discrete channels
-// You can configure each channel to use either a potentiometer or a switch,
-// see model variables ICT and ICN
-#define CHANNELS 6
-
-#include "arduinotx_eeprom.h" // this include must follow CHANNELS definition
+#include "arduinotx_config.h"
 
 // Hardware -------------------------------------------------------------------
 
 // pin definition for serial communication to SSC
 #define tx_PIN 6	    // output pin to communicate to SSC
-#define rx_PIN 5            // dummy definition - currently not needed
+#define rx_PIN 5      // dummy definition - currently not needed
 
 // update cycle definition
 #define cUpdateCycle 20000  // 20 ms
-
-// Number of potentiometers (8 max) installed in the transmitter
-// With the Arduino Nano, 8 analog input pins: A0 to A7 are available for proportional channels
-// Potentiometer 1 is connected to A0, pot 2 to A1, ... pot 8 to A7
-#define NPOTS 6
-
-// Number of user switches (6 max)  installed in the transmitter
-// With the Arduino Nano, 6 digital input pins: D2 to D7 are available for discrete channels
-// Switch 1 is connected to D2, switch 2 to D3, ... switch 6 to D7
-#define NSWITCHES  1
-
-// The led is connected to this pin
-#define LED_PIN  13
-
-// Buzzer (optional); comment this line if you do not implement it
-#define BUZZER_ENABLED
-// The buzzer is connected to this pin
-#define BUZZER_PIN 7
-
-// Battery check (optional); comment this line if you do not implement it
-#define BATCHECK_ENABLED
-// Analog pin connected to the 1/2 voltage divider
-#define BATCHECK_PIN  A7
 
 // Misc macros --------------------------------------------------------------------------
 
@@ -146,17 +119,15 @@ class ArduinoTx {
 		byte check_battery();
 #endif
 		unsigned int read_potentiometer(byte pot_number_byt);
+#if MODEL_SWITCH_BEHAVIOUR == MODEL_SWITCH_STEPPING    
+    void process_model_switch_stepping();
+    byte debounce_modelswitch();
+#elif MODEL_SWITCH_BEHAVIOUR == MODEL_SWITCH_ROTATING
+    void process_model_switch_rotating();
+    byte debounce_rotating_switch();
+#endif
 		
 	public:
-		// Special Switches -----------------------------------------------------------
-		// they are used to configure the transmitter, not to control channels
-		// A switch is ON when opened because there is a pullup resistor on the corresponding input
-		
-		static const byte MODE_SWITCH_PIN ;
-		static const byte THROTTLECUT_SWITCH_PIN; // opened=throttle cut, closed=throttle enabled
-		static const byte DUALRATE_SWITCH_PIN;	// opened=dual rate ON, closed=OFF
-		static const byte MODEL_SWITCH_PIN; // opened=use model selected by the MODEL command (CDS global variable), closed=use model corresponding to the ADS global variable
-
 		// PPM signal -----------------------------------------------------------------
 
 		static const byte PPM_PIN;	// PPM output pin, hard-wired to ISR Timer 1 on ATMega 328
@@ -169,5 +140,8 @@ class ArduinoTx {
 		void CommitChanges();
 		unsigned int ReadControl(byte chan_byt);
 		unsigned int ComputeChannelPulse(byte chan_byt, unsigned int ana_value_int);
+#ifdef BATCHECK_ENABLED
+    unsigned int ReadBattery();
+#endif
 };		
 #endif

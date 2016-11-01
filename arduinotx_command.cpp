@@ -21,18 +21,25 @@
 ** 04-07-2013 comments start by '#' instead of ';'
 ** 18-08-2013 validate_value() case 9
 ** 25-08-2013 AllVarNames_str[], AllVarTests_byt[] Gvn_BAT
+** 14-05-2014 NextDataset()
+** 29-05-2014 new command PRINT VOLT
+** 30-05-2014 lowered serial speed to 2400 bps to prevent Arduino's serial buffer overflow when uploading with txupload;
 */
 
-/* Copyright (C) 2013 Richard Goutorbe.  All right reserved.
+/* Copyright (C) 2014 Richard Goutorbe.  All right reserved.
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 3.
 This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
 Contact information: http://www.reseau.org/arduinorc/index.php?n=Main.Contact
+
+
+** GS changes: 
+** 09-10-2015 revised PROGMEM vaiabledefs to latest avr-Compiler (>= 1.6) requirements
+** 01-11-2016 merged latest version of arduinotx (1.5.5) into arduinodtx
 */
 
 #include "arduinotx_command.h"
 #include "arduinotx_eeprom.h"
-#include "arduinotx_transmitter.h"
 #include "arduinotx_lib.h"
 
 #define CMDECHO_PROMPT  0x4
@@ -55,7 +62,7 @@ extern volatile unsigned int PpmCopy_int[]; // pulse widths (microseconds)
 
 
 void ArduinotxCmd::InitCommand() {
-	serialInit(9600);
+	serialInit(2400);
 	
 	Echo_byt= CMDECHO_PROMPT | CMDECHO_REPLY | CMDECHO_INPUT;
 	strcpy_P(Cmdline_str, PSTR("ECHO COMMAND MODE")); process_command_line(Cmdline_str);
@@ -65,6 +72,9 @@ void ArduinotxCmd::InitCommand() {
 	}
 	else
 		aPrintfln(PSTR("EEPROM error"));
+#ifdef BATCHECK_ENABLED  
+  strcpy_P(Cmdline_str, PSTR("PRINT VOLT")); process_command_line(Cmdline_str);
+#endif
 	serial_prompt();
 }
 
@@ -134,12 +144,34 @@ void ArduinotxCmd::Input() {
 	}
 }
 
+// Increment the Current dataset number, simulating a "MODEL x" command line
+// this method is called by ArduinoTx::get_selected_dataset() when MODEL_SWITCH_STEPPING has been selected
+#if MODEL_SWITCH_BEHAVIOUR == MODEL_SWITCH_STEPPING
+void ArduinotxCmd::NextDataset() {
+  byte ds_byt = Eeprom_obj.GetVar(0, "CDS");
+  if (ds_byt == NDATASETS)
+    ds_byt = 0;
+  sprintf(Cmdline_str, "MODEL %d", ++ds_byt);
+  process_command_line(Cmdline_str);
+}
+// Change the Current dataset number, simulating a "MODEL x" command line
+// dataset_int in the range [1, NDATASETS]
+// this method is called by ArduinoTx::get_selected_dataset() when MODEL_SWITCH_ROTATING has been selected
+#elif MODEL_SWITCH_BEHAVIOUR == MODEL_SWITCH_ROTATING
+void ArduinotxCmd::SelectDataset(byte dataset_int) {
+  if (dataset_int > 0 && dataset_int <= NDATASETS) {
+    sprintf(Cmdline_str, "MODEL %d", dataset_int);
+    process_command_line(Cmdline_str);
+  }
+}
+#endif
+
 const char Cmd_CHECK[] PROGMEM = "CHECK"; const char Cmd_INIT[] PROGMEM = "INIT"; 
 const char Cmd_ECHO[] PROGMEM = "ECHO"; const char Cmd_MODEL[] PROGMEM = "MODEL"; 
 const char Cmd_DUMP[] PROGMEM = "DUMP"; const char Cmd_PRINT[] PROGMEM = "PRINT"; 
 const char Cmd_QUMARK[] PROGMEM = "?"; 
 // Names of all commands in same order as enum CmdTokens
-PGM_P ArduinotxCmd::AllCommands_str[] PROGMEM = {
+PGM_P const ArduinotxCmd::AllCommands_str[] PROGMEM = {
 	Cmd_CHECK, Cmd_INIT, Cmd_ECHO, Cmd_MODEL, Cmd_DUMP, Cmd_PRINT, Cmd_QUMARK,
 	NULL
 };
@@ -181,7 +213,7 @@ ArduinotxCmd::CmdToken ArduinotxCmd::parse_command_line(const char *line_str, ch
 
 
 // Names of all variables that could be tested by validate_value()
-PGM_P ArduinotxCmd::AllVarNames_str[] PROGMEM= {
+PGM_P const ArduinotxCmd::AllVarNames_str[] PROGMEM = {
 	Gvn_TSC, Gvn_CDS, Gvn_ADS, Gvn_BAT, Gvn_THC, Gvn_N1M, Gvn_P1M, Gvn_N2M, Gvn_P2M, Gvn_ICT,
 	Gvn_ICN, Gvn_REV, Gvn_DUA, Gvn_EXP, Gvn_PWL, Gvn_PWH, Gvn_EPL, Gvn_EPH, Gvn_SUB,
 	Gvn_KL1, Gvn_KL2, Gvn_KL3, Gvn_KL4, Gvn_KL5, Gvn_KL6, Gvn_KL7, Gvn_KL8, 
@@ -191,7 +223,12 @@ PGM_P ArduinotxCmd::AllVarNames_str[] PROGMEM= {
 
 // Test number corresponding to variable name in AllVarNames_str[]
 // AllVarTests_byt[] must be declared at class level because pgm_read_byte() will return wrong value if AllVarTests_byt[] is declared inside validate_value()
-const byte ArduinotxCmd::AllVarTests_byt[] PROGMEM = {9,6,6,8,7,4,2,4,2,3,4,0,1,1,5,5,1,1,2,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8};
+const byte ArduinotxCmd::AllVarTests_byt[] PROGMEM = {
+  9,6,6,8,7,4,2,4,2,3,
+  4,0,1,1,5,5,1,1,2,
+  8,8,8,8,8,8,8,8,
+  8,8,8,8,8,8,8,8
+};
 	
 // Test if given numerical value is valid for given variable
 // Return value: 0=valid, 1=out of range
@@ -398,7 +435,14 @@ void ArduinotxCmd::process_command_line(char *line_str) {
 				aPrintfln(PSTR("VERSION=%S"), SOFTWARE_VERSION);
 				printed_bool = true;
 			}
-			//~ else  if (strcmp(word2_str, "DEBUG") == 0) {
+#ifdef BATCHECK_ENABLED      
+      else if (strcmp(word2_str, "VOLT") == 0) {
+        float volt_flt = ArduinoTx_obj.ReadBattery() / 102.3; // 102.3 = 1V
+        aPrintfln(PSTR("VOLT=%d.%d"), int(volt_flt), int(10 * (volt_flt - int(volt_flt))));
+        printed_bool = true;
+      }
+#endif
+      //~ else  if (strcmp(word2_str, "DEBUG") == 0) {
 				//~ for (int idx_int = 0; idx_int<GLOBAL_VARS; idx_int++) {
 					//~ aPrintfln(PSTR("idx %d type=%c"), idx_int, getProgmemByteArrayValue(GlobalVarTypeP_byt, idx_int));
 				//~ }

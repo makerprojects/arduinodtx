@@ -9,9 +9,24 @@
 ** 15-06-2013 ModelVar*
 */
 
+/* Copyright (C) 2014 Richard Goutorbe.  All right reserved.
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 3.
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
+Contact information: http://www.reseau.org/arduinorc/index.php?n=Main.Contact
+
+
+GS changes: 
+** 09-10-2015 revised PROGMEM vaiabledefs to latest avr-Compiler (>= 1.6) requirements
+** 01-11-2016 merged latest version of arduinotx (1.5.5) into arduinodtx
+*/
+
+
+
 #ifndef arduinotx_command_h
 #define arduinotx_command_h
 #include <Arduino.h>
+#include "arduinodtx_transmitter.h"
 
 #define CMDLINESIZE 32
 
@@ -30,8 +45,8 @@ class ArduinotxCmd {
 		
 		byte Echo_byt; // b2=echo command prompt, b1=echo replies, b0=echo input characters
 
-		static PGM_P AllCommands_str[] PROGMEM; // Names of all commands
-		static PGM_P AllVarNames_str[] PROGMEM; // Names of all variables that could be tested by validate_value()
+		static PGM_P const AllCommands_str[] PROGMEM; // Names of all commands
+		static PGM_P const AllVarNames_str[] PROGMEM; // Names of all variables that could be tested by validate_value()
 		static const byte AllVarTests_byt[] PROGMEM; // Test number corresponding to variable name
 		char Cmdline_str[CMDLINESIZE + 1];
 		
@@ -49,5 +64,10 @@ class ArduinotxCmd {
 		void InitCommand();
 		void EndCommand();
 		void Input();
+#if MODEL_SWITCH_BEHAVIOUR == MODEL_SWITCH_STEPPING
+		void NextDataset();
+#elif MODEL_SWITCH_BEHAVIOUR == MODEL_SWITCH_ROTATING
+		void SelectDataset(byte dataset_int);
+#endif
 };
 #endif
